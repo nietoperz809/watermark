@@ -4,36 +4,29 @@ import java.awt.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 public class MainFrame extends JFrame {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = 1L;
-    private JPanel contentPane;
-    private JTextField textField;
-    private JTextField txtWatermarkToShow;
-    private JTextField textField_1;
+
+    private float __alpha = 0.4f;
+    private final Point __pos = new Point (10,120);
+    private Color __col = new Color(0,0,0);
+    private Font __font = new Font("Times New Roman", Font.PLAIN, 30);
+    JTextField __text = new JTextField();
+    private final JPanel contentPane;
+    private final JTextField tf_Position;
+    private final JTextField transparency;
     private BufferedImage theImage;
 
     private final JScrollPane scrollPane = new JScrollPane();
 
     private final JPanel picturePanel = new JPanel() {
-
-        private void paintText (Graphics2D g, int posx, int posy) {
-            Composite c = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .4f);
-            g.setComposite(c);
-            // Draw some text.
-            g.setPaint(Color.white);
-            g.setFont(new Font("Times New Roman", Font.PLAIN, 30));
-            g.drawString("hello", posx, posy);
-        }
-
         public void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
 
@@ -45,7 +38,8 @@ public class MainFrame extends JFrame {
 
             if (theImage != null)
                 g2.drawImage(theImage, 0, 0, null);
-            paintText(g2, 25, 130);
+            Tools.paintText(g2, __pos.x, __pos.y,
+                    __font, __text.getText(), __col, __alpha);
         }
     };
 
@@ -53,14 +47,12 @@ public class MainFrame extends JFrame {
      * Launch the application.
      */
     public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    MainFrame frame = new MainFrame();
-                    frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        EventQueue.invokeLater(() -> {
+            try {
+                MainFrame frame = new MainFrame();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
@@ -86,65 +78,83 @@ public class MainFrame extends JFrame {
         contentPane.add(panel_1);
         panel_1.setLayout(null);
 
-        textField = new JTextField();
-        textField.setToolTipText("X/Y separated by /");
-        textField.setHorizontalAlignment(SwingConstants.CENTER);
-        textField.setText("0/0");
-        textField.setBounds(193, 0, 46, 20);
-        panel_1.add(textField);
-        textField.setColumns(10);
+        tf_Position = new JTextField();
+        tf_Position.setToolTipText("X/Y separated by /");
+        tf_Position.setHorizontalAlignment(SwingConstants.CENTER);
+        tf_Position.setText("0/0");
+        tf_Position.setBounds(193, 0, 46, 20);
+        tf_Position.addActionListener(e -> {
+            String t = tf_Position.getText();
+            String[] spl = t.split("/");
+            __pos.x = Integer.parseInt(spl[0]);
+            __pos.y = Integer.parseInt(spl[1]);
+            repaint();
+
+        });
+        panel_1.add(tf_Position);
+        tf_Position.setColumns(10);
 
         JLabel lblNewLabel_1 = new JLabel("Position");
-        lblNewLabel_1.setLabelFor(textField);
+        lblNewLabel_1.setLabelFor(tf_Position);
         lblNewLabel_1.setBounds(147, -1, 46, 22);
         panel_1.add(lblNewLabel_1);
 
-        txtWatermarkToShow = new JTextField();
-        txtWatermarkToShow.setToolTipText("Watermark");
-        txtWatermarkToShow.setText("Watermark to show");
-        txtWatermarkToShow.setBounds(243, 32, 315, 20);
-        panel_1.add(txtWatermarkToShow);
-        txtWatermarkToShow.setColumns(10);
+        __text.setToolTipText("Watermark");
+        __text.setText("Watermark to show");
+        __text.setBounds(243, 32, 315, 20);
+        __text.addActionListener(e -> repaint());
 
-        JButton btnNewButton = new JButton("Print");
-        btnNewButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            }
+        panel_1.add(__text);
+        __text.setColumns(10);
+
+        JButton btnNewButton = new JButton("Color");
+        btnNewButton.addActionListener(e -> {
+            __col = JColorChooser.showDialog(null,
+                    "Text Color", null);
+            repaint();
         });
         btnNewButton.setBounds(147, 31, 89, 23);
         panel_1.add(btnNewButton);
 
         JButton btnLoad = new JButton("Load");
-        btnLoad.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                ImagePreviewJFileChooser ifc = new ImagePreviewJFileChooser();
-                try {
-                    theImage = ImageIO.read (ifc.getSelectedFile());
-                    Dimension dim = new Dimension (theImage.getWidth(), theImage.getHeight());
-                    JViewport vp = scrollPane.getViewport();
-                    vp.setViewSize (dim);
-                    picturePanel.setPreferredSize(dim);
-                    repaint();
-                } catch (IOException ex) {
-                    System.out.println("IMG load fail");
-                }
+        btnLoad.addActionListener(e -> {
+            ImagePreviewJFileChooser ifc = new ImagePreviewJFileChooser();
+            try {
+                theImage = ImageIO.read (ifc.getSelectedFile());
+                Dimension dim = new Dimension (theImage.getWidth(), theImage.getHeight());
+                JViewport vp = scrollPane.getViewport();
+                vp.setViewSize (dim);
+                picturePanel.setPreferredSize(dim);
+                repaint();
+            } catch (IOException ex) {
+                System.out.println("IMG load fail");
             }
         });
         btnLoad.setBounds(589, 11, 65, 41);
         panel_1.add(btnLoad);
 
         JButton btnSave = new JButton("Save");
-        btnSave.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        btnSave.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Specify a file to save");
+
+            int userSelection = fileChooser.showSaveDialog(picturePanel);
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
+                Tools.saveImg(picturePanel,fileToSave.getAbsolutePath());
             }
         });
         btnSave.setBounds(661, 11, 65, 41);
         panel_1.add(btnSave);
 
         JButton btnFont = new JButton("Select font");
-        btnFont.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            }
+        btnFont.addActionListener(e -> {
+            final FontChooser2 fc = new FontChooser2(null);
+            //fc.adjustDisplay(ta.getFont());
+            fc.setVisible(true);
+            __font = fc.getSelectedFont();
+            repaint();
         });
         btnFont.setBounds(10, 11, 113, 41);
         panel_1.add(btnFont);
@@ -153,14 +163,21 @@ public class MainFrame extends JFrame {
         lblTransparency.setBounds(249, 3, 89, 14);
         panel_1.add(lblTransparency);
 
-        textField_1 = new JTextField();
-        lblTransparency.setLabelFor(textField_1);
-        textField_1.setToolTipText("float value 0...1");
-        textField_1.setHorizontalAlignment(SwingConstants.CENTER);
-        textField_1.setText("0.4");
-        textField_1.setBounds(334, 0, 46, 20);
-        panel_1.add(textField_1);
-        textField_1.setColumns(10);
+        transparency = new JTextField();
+        lblTransparency.setLabelFor(transparency);
+        transparency.setToolTipText("float value 0...1");
+        transparency.setHorizontalAlignment(SwingConstants.CENTER);
+        transparency.setText("0.4");
+        transparency.setBounds(334, 0, 46, 20);
+        transparency.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                __alpha = Float.parseFloat(transparency.getText());
+                repaint();
+            }
+        });
+        panel_1.add(transparency);
+        transparency.setColumns(10);
 
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);

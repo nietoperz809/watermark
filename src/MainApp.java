@@ -15,8 +15,7 @@ public class MainApp {
         f.setSize (tp.getWidth()+100, tp.getHeight()+100);
         //f.pack();
         f.setVisible(true);
-        TransparentText.saveImg(f,"C:\\Users\\Administrator\\Desktop\\jmemPractice.png");
-
+        Tools.saveImg(f.getRootPane(),"C:\\Users\\Administrator\\Desktop\\jmemPractice.png");
     }
 
     public static void main(String[] args) {
