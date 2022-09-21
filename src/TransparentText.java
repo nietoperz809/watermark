@@ -24,7 +24,17 @@ public class TransparentText extends JPanel {
         try
         {
             __img = ImageIO.read (imgF);
-            __img = __img.getScaledInstance(400,400,BufferedImage.SCALE_FAST);
+            int nx = __img.getWidth(null);
+            int ny = __img.getHeight(null);
+            int div = 2;
+            while (nx > 700 || ny > 700) {
+                nx = __img.getWidth(null)/div;
+                ny = __img.getHeight(null)/div;
+                div++;
+            }
+            __img = __img.getScaledInstance(nx,ny,BufferedImage.SCALE_FAST);
+            setSize(nx, ny);
+            setPreferredSize(new Dimension(nx, ny));
             repaint();
         }
         catch (IOException e)

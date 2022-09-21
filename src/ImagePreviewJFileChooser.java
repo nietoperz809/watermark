@@ -39,68 +39,64 @@ class ImagePreviewJFileChooser extends JFileChooser
         setFileFilter(filter);
 
         // Add property change listener
-        addPropertyChangeListener(new PropertyChangeListener(){
+        // When any JFileChooser property changes, this handler
+// is executed
+        addPropertyChangeListener(pe -> {
+            // Create SwingWorker for smooth experience
+            SwingWorker<Image,Void> worker=new SwingWorker<Image,Void>(){
 
-            // When any JFileChooser property changes, this handler
-            // is executed
-            public void propertyChange(final PropertyChangeEvent pe)
-            {
-                // Create SwingWorker for smooth experience
-                SwingWorker<Image,Void> worker=new SwingWorker<Image,Void>(){
-
-                    // The image processing method
-                    protected Image doInBackground()
+                // The image processing method
+                protected Image doInBackground()
+                {
+                    // If selected file changes..
+                    if(pe.getPropertyName().equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY))
                     {
-                        // If selected file changes..
-                        if(pe.getPropertyName().equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY))
-                        {
-                            // Get selected file
-                            File f=getSelectedFile();
+                        // Get selected file
+                        File f=getSelectedFile();
 
-                            try
-                            {
-                                // Create FileInputStream for file
-                                FileInputStream fin=new FileInputStream(f);
-
-                                // Read image from fin
-                                BufferedImage bim=ImageIO.read(fin);
-
-                                // Return the scaled version of image
-                                return bim.getScaledInstance(178,170,BufferedImage.SCALE_FAST);
-
-                            }catch(Exception e){
-                                // If there is a problem reading image,
-                                // it might not be a valid image or unable
-                                // to read
-                                img.setText(" Not valid image/Unable to read");
-                            }
-                        }
-
-                        return null;
-                    }
-
-                    protected void done()
-                    {
                         try
                         {
-                            // Get the image
-                            Image i=get(1L,TimeUnit.NANOSECONDS);
+                            // Create FileInputStream for file
+                            FileInputStream fin=new FileInputStream(f);
 
-                            // If i is null, go back!
-                            if(i==null) return;
+                            // Read image from fin
+                            BufferedImage bim=ImageIO.read(fin);
 
-                            // Set icon otherwise
-                            img.setIcon(new ImageIcon(i));
+                            // Return the scaled version of image
+                            return bim.getScaledInstance(178,170,BufferedImage.SCALE_FAST);
+
                         }catch(Exception e){
-                            // Print error occured
-                            img.setText(" Error occured.");
+                            // If there is a problem reading image,
+                            // it might not be a valid image or unable
+                            // to read
+                            img.setText(" Not valid image/Unable to read");
                         }
                     }
-                };
 
-                // Start worker thread
-                worker.execute();
-            }
+                    return null;
+                }
+
+                protected void done()
+                {
+                    try
+                    {
+                        // Get the image
+                        Image i=get(1L,TimeUnit.NANOSECONDS);
+
+                        // If i is null, go back!
+                        if(i==null) return;
+
+                        // Set icon otherwise
+                        img.setIcon(new ImageIcon(i));
+                    }catch(Exception e){
+                        // Print error occured
+                        img.setText(" Error occured.");
+                    }
+                }
+            };
+
+            // Start worker thread
+            worker.execute();
         });
     }
 }
