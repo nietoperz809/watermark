@@ -19,10 +19,9 @@ public class MainFrame extends JFrame {
     private Color __col = new Color(0,0,0);
     private Font __font = new Font("Times New Roman", Font.PLAIN, 30);
     JTextField __text = new JTextField();
-    private final JPanel contentPane;
     private final JTextField tf_Position;
     private final JTextField transparency;
-    private BufferedImage theImage;
+    private BufferedImage __image;
 
     private final JScrollPane scrollPane = new JScrollPane();
 
@@ -36,8 +35,8 @@ public class MainFrame extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_RENDERING,
                     RenderingHints.VALUE_RENDER_QUALITY);
 
-            if (theImage != null)
-                g2.drawImage(theImage, 0, 0, null);
+            if (__image != null)
+                g2.drawImage(__image, 0, 0, null);
             Tools.paintText(g2, __pos.x, __pos.y,
                     __font, __text.getText(), __col, __alpha);
         }
@@ -66,7 +65,7 @@ public class MainFrame extends JFrame {
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 767, 535);
-        contentPane = new JPanel();
+        JPanel contentPane = new JPanel();
         contentPane.setBackground(Color.BLACK);
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
@@ -120,8 +119,8 @@ public class MainFrame extends JFrame {
         btnLoad.addActionListener(e -> {
             ImagePreviewJFileChooser ifc = new ImagePreviewJFileChooser();
             try {
-                theImage = ImageIO.read (ifc.getSelectedFile());
-                Dimension dim = new Dimension (theImage.getWidth(), theImage.getHeight());
+                __image = ImageIO.read (ifc.getSelectedFile());
+                Dimension dim = new Dimension (__image.getWidth(), __image.getHeight());
                 JViewport vp = scrollPane.getViewport();
                 vp.setViewSize (dim);
                 picturePanel.setPreferredSize(dim);
